@@ -1,20 +1,10 @@
-import { defineConfig } from "@pandacss/dev";
+import { defineConfig } from '@pandacss/dev'
 
 export default defineConfig({
-  // Whether to use css reset
   preflight: true,
-
-  // Where to look for your css declarations
-  include: ["./src/**/*.{js,jsx,ts,tsx}", "./pages/**/*.{js,jsx,ts,tsx}"],
-
-  // Files to exclude
+  presets: ['@pandacss/preset-base', '@park-ui/panda-preset'],
+  include: ['./src/**/*.{js,jsx,ts,tsx}'],
   exclude: [],
-
-  // Useful for theme customization
-  theme: {
-    extend: {},
-  },
-
-  // The output directory for your css system
-  outdir: "src/styled-system",
-});
+  jsxFramework: 'solid',
+  outdir: 'src/styled-system',
+})
