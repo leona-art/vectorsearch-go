@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
+	"time"
 	"vectorsearch-go/domain"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -22,6 +24,19 @@ type esArticleRepository struct {
 	client *elasticsearch.TypedClient
 }
 
+func retry[T any](attempts int, sleep time.Duration, f func() (*T, error)) (*T, error) {
+	var err error
+	var res *T
+	for i := 0; i < attempts; i++ {
+		if res, err = f(); err == nil {
+			return res, nil
+		}
+		fmt.Printf("retrying after error: %v", err)
+		time.Sleep(sleep)
+	}
+	return nil, fmt.Errorf("failed after %d attempts, last error: %v", attempts, err)
+}
+
 func NewESArticleRepository() (*esArticleRepository, error) {
 	esUrl := os.Getenv("ELASTICSEARCH_URL")
 	if esUrl == "" {
@@ -32,16 +47,27 @@ func NewESArticleRepository() (*esArticleRepository, error) {
 			esUrl,
 		},
 	}
-	es, err := elasticsearch.NewTypedClient(config)
-	if err != nil {
-		return nil, errors.New("failed to create elasticsearch client")
-	}
 
-	exists_index, err := es.Indices.Exists(ES_INDEX).Do(context.Background())
+	es, err := retry(3, 15*time.Second, func() (*elasticsearch.TypedClient, error) {
+		return elasticsearch.NewTypedClient(config)
+	})
+	fmt.Println("Connected to Elastic Search")
 	if err != nil {
 		return nil, err
 	}
-	if !exists_index {
+
+	exists_index, err := retry(3, 30*time.Second, func() (*bool, error) {
+		res, err := es.Indices.Exists(ES_INDEX).Do(context.Background())
+		if err != nil {
+			return nil, err
+		}
+		return &res, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	if !*exists_index {
 		_, err := es.Indices.
 			Create(ES_INDEX).
 			Request(&create.Request{
