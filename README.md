@@ -1,14 +1,27 @@
 
-## ElastcSearch Index更新
-```bash
-go run backend/cmd/es/index_updater.go
-```
+## setup
+手っ取り早く確認する用
+1. GoogleAIのAPIキーを取得
+2. docker-composeのGOOGLE_AI_API_KEYにセット
+3. docker-composeを起動
 
-## サーバー起動
+## dev
+
+### 環境
+- go 1.22.4
+- Bun 1.1.9 or Node.js 21.6.2
+
+### サーバー起動
 ```bash
 go run backend/cmd/server/main.go
 ```
+### フロントエンド起動
+```bash
+cd web
 
-## setup
-1. GoogleAIのAPIキーを取得
-2. docker-composeのGOOGLE_AI_API_KEYにセット
+npm install
+npm run dev
+# or
+bun install
+bun dev
+```
