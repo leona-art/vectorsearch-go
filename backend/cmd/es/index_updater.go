@@ -9,11 +9,15 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 )
 
+const (
+	ES_ADDRESS = "http://localhost:9200"
+)
+
 func main() {
 
 	config := elasticsearch.Config{
 		Addresses: []string{
-			infra.ES_ADDRESS,
+			ES_ADDRESS,
 		},
 	}
 	es, err := elasticsearch.NewTypedClient(config)

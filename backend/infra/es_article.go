@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"os"
 	"vectorsearch-go/domain"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -13,7 +14,6 @@ import (
 )
 
 const (
-	ES_ADDRESS  = "http://localhost:9200"
 	ES_INDEX    = "articles"
 	VECTOR_DIMS = 768
 )
@@ -23,14 +23,18 @@ type esArticleRepository struct {
 }
 
 func NewESArticleRepository() (*esArticleRepository, error) {
+	esUrl := os.Getenv("ELASTICSEARCH_URL")
+	if esUrl == "" {
+		return nil, errors.New("ELASTICSEARCH_URL is required")
+	}
 	config := elasticsearch.Config{
 		Addresses: []string{
-			ES_ADDRESS,
+			esUrl,
 		},
 	}
 	es, err := elasticsearch.NewTypedClient(config)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to create elasticsearch client")
 	}
 
 	exists_index, err := es.Indices.Exists(ES_INDEX).Do(context.Background())
