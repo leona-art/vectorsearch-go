@@ -28,12 +28,24 @@ services:
     container_name: backend
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - GOOGLE_AI_API_KEY=[ここにAPIキーを入力]
     ports:
       - 8080:8080
     networks:
       - elk
     depends_on:
       - elasticsearch
+  web:
+    build:
+      context: .
+      dockerfile: web.Dockerfile
+    container_name: web
+    environment:
+      - BACKEND_URL=http://backend:8080
+    ports:
+      - 3000:3000
+    networks:
+      - elk
 networks:
   elk:
     driver: bridge
